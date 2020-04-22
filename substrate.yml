@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: substrate-val1
+  labels:
+    purpose: substrate
+    app: substrate-val1
+spec:
+  containers:
+  - name: validator1
+    image: parity/substrate
+    command: ["/usr/local/bin/substrate"]
+    args: ["--chain", "local", "--alice","--node-key", "20106e2eca9933d9d6d8e6425ce9f6b133190adfc7a92fd676b788ac170b8005", "--validator"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: substrate-val2
+  labels:
+    purpose: substrate
+    app: substrate-val2
+spec:
+  containers:
+  - name: validator2
+    image: parity/substrate
+    command: ["/usr/local/bin/substrate"]
+    args: ["--chain", "local", "--bob", "--validator", "--bootnodes", "/dns4/validator1-service/tcp/30333/p2p/12D3KooWDEdSX2nbJVwxvJy9UwzEKBYySBwbNuS5WqeHTcuHWCiE"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: substrate-node1
+  labels:
+    purpose: substrate
+    app: substrate-node1
+spec:
+  containers:
+  - name: node1
+    image: parity/substrate
+    command: ["/usr/local/bin/substrate"]
+    args: ["--chain", "local", "--name", "node-1", "--bootnodes", "/dns4/validator1-service/tcp/30333/p2p/12D3KooWDEdSX2nbJVwxvJy9UwzEKBYySBwbNuS5WqeHTcuHWCiE"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: validator1-service
+spec:
+  selector:
+    app: substrate-val1
+  ports:
+    - port: 30333
+      targetPort: 30333
+      protocol: TCP
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: validator2-service
+spec:
+  selector:
+    app: substrate-val2
+  ports:
+    - name: substrate
+      port: 30334
+      targetPort: 30333
